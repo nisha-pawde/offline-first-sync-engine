@@ -1,0 +1,4 @@
+*.o
+*.out
+central_server
+local_node
