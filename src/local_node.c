@@ -1,36 +1,47 @@
- #include <stdio.h>
- #include <pthread.h>
- #include <unistd.h>
- #include <stdlib.h>
- #include "../include/config.h"
- 
- void* data_generator(void* arg){
-   
-      while(1){
-           FILE *fp = fopen(LOCAL_DATA_FILE, "a");
-           int value = rand() % 100;
-           fprintf(fp, "Data: %d\n", value);
-           fclose(fp);
-           printf("Generated: %d\n", value);
-           sleep(2);
-         }
-   }
 
- void* network_monitor(void* arg){
-       while(1){
-            printf("Checking network...\n");
-            sleep(5);
-         }
-   } 
+
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <pthread.h>
+ #include <sys/shm.h>
+ #include <fcntl.h>
+ #include "config.h"
+ #include <string.h>
+
+ char *shm_ptr;
+
+ void* generate_data(void* arg){
+        while(1){
+            int data = rand() % 100;
+            sprintf(shm_ptr, "DATA:%d", data);
+            printf("Generated: %s\n", shm_ptr);
+            sleep(2);
+          }
+     }
+
+
+ void* write_file(void* arg){
+         while(1){
+              int fd = open(DATA_FILE, O_CREAT | O_WRONLY | O_APPEND, 0666);
+              char buffer[100];
+              sprintf(buffer, "%s PENDING\n", shm_ptr);
+              write(fd, buffer, strlen(buffer));
+              write(fd, "\n", 1);
+              close(fd);
+              sleep(3);
+           }
+      }
 
  int main(){
-             pthread_t t1, t2;
+          int shmid = shmget(SHM_KEY, 1024, 0666 | IPC_CREAT);
+          shm_ptr = (char*) shmat(shmid, NULL, 0);
 
-             pthread_create(&t1, NULL, data_generator, NULL);
-             pthread_create(&t2, NULL, network_monitor, NULL);
+          pthread_t t1, t2;
+          pthread_create(&t1, NULL, generate_data, NULL);
+          pthread_create(&t2, NULL, write_file, NULL);
+          pthread_join(t1, NULL);
+          pthread_join(t2, NULL);
 
-              pthread_join(t1, NULL);
-              pthread_join(t2, NULL);
-
-              return 0;
-    }
+          return 0;
+       }

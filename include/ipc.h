@@ -1,26 +1,11 @@
 
  #ifndef IPC_H
  #define IPC_H
+ #define MSG_DATA 1
+ #define MSG_ACK  2
 
- #include <sys/types.h>
- #include <sys/ipc.h>
- #include <sys/msg.h>
- #include <sys/shm.h>
- #include <sys/sem.h>
- #include <unistd.h>
- 
- #define PIPE_READ 0
- #define PIPE_WRITE 1
- 
- #define MSG_QUEUE_KEY 1234
- #define SHM_KEY 5678
- #define SEM_KEY 9101
+ void create_fifo();
+ void write_fifo(const char *msg);
+ void read_fifo(char *buffer);
 
- struct message {
-
-        long type;
-        char text[256];
-
-   };
-
-  #endif
+ #endif

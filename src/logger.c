@@ -2,21 +2,24 @@
  #include <stdio.h>
  #include <fcntl.h>
  #include <unistd.h>
- #include "../include/config.h"
+ #include "ipc.h"
+ #include "config.h"
+ #include <string.h>
 
  int main(){
 
-      int fd;
-      
-      fd = open(LOG_FILE, O_WRONLY | O_CREAT | O_APPEND, 0644);
-       
-      if(fd < 0) {
-         printf("Error opening log file\n");
-         return 1;
-       }
+         char buffer[100];
 
-       write(fd, "Logger started\n", 15);
+         while(1){
+              read_fifo(buffer);
+              printf("Logger received: %s\n", buffer);
 
-       close(fd);
-
- }
+              int fd = open(LOG_FILE, O_CREAT | O_WRONLY | O_APPEND, 0666);
+              write(fd, buffer, strlen(buffer));
+              write(fd, "\n", 1);
+              lseek(fd, 0, SEEK_END);
+ 
+              close(fd);
+            }
+         return 0;
+    }
