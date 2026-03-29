@@ -1,0 +1,23 @@
+Project Architecture Notes
+
+Processes:
+1. Supervisor
+2. Local Node
+3. Sync Manager
+4. Central Server
+5. Logger
+
+Thread Design:
+- Network Monitor Thread
+- Sync Worker Thread
+
+IPC Used:
+- FIFO / Named Pipes
+
+Signals:
+- SIGINT
+- SIGUSR1
+- SIGTERM
+
+File I/O:
+- open(), read(), write(), lseek()
